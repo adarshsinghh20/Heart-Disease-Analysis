@@ -1,0 +1,30 @@
+# render.yaml  –  Render Infrastructure-as-Code
+# Docs: https://render.com/docs/yaml-spec
+
+services:
+  - type: web
+    name: hdinsight-heart-disease
+    runtime: python
+    region: oregon          # cheapest / fastest free-tier region
+    plan: free              # change to "starter" for always-on + persistent disk
+
+    # ── Build ─────────────────────────────────────────
+    buildCommand: pip install -r requirements.txt
+
+    # ── Start: init DB from CSV then launch gunicorn ──
+    startCommand: python db_setup.py && gunicorn app:app -c gunicorn.conf.py
+
+    # ── Health check ─────────────────────────────────
+    healthCheckPath: /
+
+    # ── Environment variables ─────────────────────────
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.10.13
+      - key: WEB_CONCURRENCY
+        value: 2
+
+    # ── Auto-deploy on every push to main ─────────────
+    autoDeploy: true

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Deep Analysis{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <div>
+      <h2 class="page-title"><i class="fa-solid fa-microscope text-success me-2"></i>Deep Data Analysis</h2>
+      <p class="text-muted mb-0">Advanced statistical exploration of all 18 features · Correlation analysis · Comorbidity mapping</p>
+    </div>
+  </div>
+
+  <!-- Summary Stats Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-mini-card border-start border-danger border-3">
+        <div class="smc-label">HD Rate</div>
+        <div class="smc-value text-danger">{{ kpis.hd_pct }}%</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-mini-card border-start border-warning border-3">
+        <div class="smc-label">Diabetic Rate</div>
+        <div class="smc-value text-warning">{{ kpis.diabetic_pct }}%</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-mini-card border-start border-info border-3">
+        <div class="smc-label">Physically Active</div>
+        <div class="smc-value text-info">{{ kpis.active_pct }}%</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-mini-card border-start border-success border-3">
+        <div class="smc-label">Smokers</div>
+        <div class="smc-value text-success">{{ kpis.smokers_pct }}%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Correlation heatmap -->
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <i class="fa-solid fa-grid text-success me-1"></i>Full Correlation Heatmap – All Clinical Features
+          <span class="ms-auto badge bg-success-soft text-success">Calculated Field</span>
+        </div>
+        {% if chart_corr %}
+        <div id="a_chart_corr" class="chart-container" style="min-height:500px;"></div>
+        {% else %}
+        <div class="text-muted p-3">Chart unavailable.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Sunburst + Comorbidities -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-5">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-sun text-warning me-1"></i>Hierarchical Sunburst View</div>
+        {% if chart_sun %}
+        <div id="a_chart_sun" class="chart-container" style="min-height:480px;"></div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-layer-group text-secondary me-1"></i>Comorbidities: Diabetic + Smoking</div>
+        {% if chart_comorb %}
+        <div id="a_chart_comorb" class="chart-container"></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Physical/Mental + Sleep -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-7">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-brain text-info me-1"></i>Physical Health vs Mental Health (Scatter)</div>
+        {% if chart_phys %}
+        <div id="a_chart_phys" class="chart-container" style="min-height:460px;"></div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-moon text-secondary me-1"></i>Sleep Time Distribution</div>
+        {% if chart_sleep %}
+        <div id="a_chart_sleep" class="chart-container"></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Race Treemap -->
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-sitemap text-primary me-1"></i>Race & Ethnicity Treemap</div>
+        {% if chart_race %}
+        <div id="a_chart_race" class="chart-container" style="min-height:400px;"></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Takeaways -->
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header"><i class="fa-solid fa-clipboard-list text-primary me-2"></i><strong>Analysis Summary & Clinical Insights</strong></div>
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-4">
+              <h6 class="text-danger"><i class="fa-solid fa-circle-dot me-1"></i>Top Risk Factors</h6>
+              <ul class="small">
+                <li>Stroke history shows highest HD comorbidity</li>
+                <li>Difficulty walking is a strong HD indicator</li>
+                <li>Diabetic patients show significantly higher HD rates</li>
+                <li>Kidney disease correlates with HD</li>
+              </ul>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-primary"><i class="fa-solid fa-circle-dot me-1"></i>Demographic Patterns</h6>
+              <ul class="small">
+                <li>HD rate increases exponentially after age 55</li>
+                <li>Males have higher HD prevalence across all ages</li>
+                <li>White race group has highest absolute patient count</li>
+                <li>"Poor/Fair" self-reported health = high-risk cohort</li>
+              </ul>
+            </div>
+            <div class="col-md-4">
+              <h6 class="text-success"><i class="fa-solid fa-circle-dot me-1"></i>Protective Factors</h6>
+              <ul class="small">
+                <li>Physical activity consistently reduces HD risk</li>
+                <li>Adequate sleep (7–8 hrs) correlates with lower risk</li>
+                <li>Non-smokers show lower HD rates</li>
+                <li>Better general health correlates with lower HD rates</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const cfg = {responsive: true, displayModeBar: true, modeBarButtonsToRemove: ['lasso2d','select2d']};
+{% if chart_corr %}  Plotly.newPlot('a_chart_corr',  {{ chart_corr  | safe }}.data, {{ chart_corr  | safe }}.layout, cfg); {% endif %}
+{% if chart_sun %}   Plotly.newPlot('a_chart_sun',   {{ chart_sun   | safe }}.data, {{ chart_sun   | safe }}.layout, cfg); {% endif %}
+{% if chart_comorb %}Plotly.newPlot('a_chart_comorb',{{ chart_comorb| safe }}.data, {{ chart_comorb| safe }}.layout, cfg); {% endif %}
+{% if chart_phys %}  Plotly.newPlot('a_chart_phys',  {{ chart_phys  | safe }}.data, {{ chart_phys  | safe }}.layout, cfg); {% endif %}
+{% if chart_sleep %} Plotly.newPlot('a_chart_sleep', {{ chart_sleep | safe }}.data, {{ chart_sleep | safe }}.layout, cfg); {% endif %}
+{% if chart_race %}  Plotly.newPlot('a_chart_race',  {{ chart_race  | safe }}.data, {{ chart_race  | safe }}.layout, cfg); {% endif %}
+</script>
+{% endblock %}

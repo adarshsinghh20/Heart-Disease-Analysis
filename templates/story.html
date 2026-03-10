@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block title %}Data Story{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+  <!-- Header -->
+  <div class="story-header text-center mb-5">
+    <span class="badge bg-primary-soft text-primary px-3 py-2 mb-3">
+      <i class="fa-solid fa-book-open me-1"></i>3-Scene Data Story
+    </span>
+    <h2 class="page-title">Stories Behind the Data</h2>
+    <p class="text-muted">Three real-world perspectives on heart disease risk — Doctor, Policy-Maker, Individual</p>
+  </div>
+
+  <!-- Progress Nav -->
+  <div class="story-progress-nav mb-5">
+    <a href="#scene1" class="story-nav-dot active" data-scene="1">
+      <div class="story-dot"><i class="fa-solid fa-user-doctor"></i></div>
+      <span>Scene 1</span>
+    </a>
+    <div class="story-nav-line"></div>
+    <a href="#scene2" class="story-nav-dot" data-scene="2">
+      <div class="story-dot"><i class="fa-solid fa-landmark"></i></div>
+      <span>Scene 2</span>
+    </a>
+    <div class="story-nav-line"></div>
+    <a href="#scene3" class="story-nav-dot" data-scene="3">
+      <div class="story-dot"><i class="fa-solid fa-user-heart"></i></div>
+      <span>Scene 3</span>
+    </a>
+  </div>
+
+  <!-- ── SCENE 1: Dr. Sharma ──────────────────────────── -->
+  <section id="scene1" class="story-scene mb-5">
+    <div class="story-scene-header scene-header-red">
+      <div class="scene-badge"><span>Scene 1</span></div>
+      <div class="scene-persona">
+        <div class="persona-avatar bg-danger-soft"><i class="fa-solid fa-user-doctor fa-2x text-danger"></i></div>
+        <div>
+          <h3>Dr. Sharma</h3>
+          <p class="text-muted mb-0">Senior Cardiologist · Metropolitan Hospital</p>
+        </div>
+      </div>
+      <blockquote class="story-quote">
+        "Which age groups and lifestyle factors are driving our increasing admissions? 
+         I need to design targeted prevention campaigns."
+      </blockquote>
+    </div>
+
+    <div class="story-scene-body">
+      <div class="row g-4">
+        <div class="col-lg-7">
+          {% if chart_age_sex %}
+          <div class="chart-card">
+            <div class="chart-card-header"><i class="fa-solid fa-circle-nodes text-warning me-1"></i>Age & Gender HD Rate (Bubble)</div>
+            <div id="story_chart1" class="chart-container"></div>
+          </div>
+          {% endif %}
+        </div>
+        <div class="col-lg-5">
+          <div class="story-insight-panel">
+            <h5><i class="fa-solid fa-lightbulb text-warning me-2"></i>Key Findings</h5>
+            <ul class="story-findings">
+              <li><strong>Steep rise after 55:</strong> Heart disease rates accelerate sharply in the 55–59 age bracket, peaking for those 80+.</li>
+              <li><strong>Male disparity:</strong> Males consistently show higher HD rates across all age groups compared to females.</li>
+              <li><strong>BMI correlation:</strong> Average BMI remains elevated regardless of age for HD patients, suggesting weight management is universally important.</li>
+              <li><strong>Target group:</strong> Males aged 60–74 represent the highest-risk cohort requiring intensive monitoring.</li>
+            </ul>
+            <div class="story-action-box">
+              <h6><i class="fa-solid fa-bullseye text-danger me-1"></i>Dr. Sharma's Action</h6>
+              <p class="small mb-0">Launch gender-specific screening campaigns for patients aged 55+ with BMI &gt; 28, including mandatory smoking cessation counselling.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mt-2">
+        <div class="col-lg-8">
+          {% if chart_risk %}
+          <div class="chart-card">
+            <div class="chart-card-header"><i class="fa-solid fa-triangle-exclamation text-danger me-1"></i>Risk Factors – HD Rate With vs Without</div>
+            <div id="story_chart2" class="chart-container"></div>
+          </div>
+          {% endif %}
+        </div>
+        <div class="col-lg-4">
+          <div class="story-insight-panel">
+            <h5><i class="fa-solid fa-magnifying-glass-chart text-danger me-2"></i>Risk Factor Analysis</h5>
+            <p class="small text-muted">Comparing HD prevalence among patients who have a specific risk factor vs those who don't reveals actionable priorities.</p>
+            <div class="risk-pill-list">
+              <div class="risk-pill high">Stroke History: Highest differential</div>
+              <div class="risk-pill high">Difficulty Walking: Strong indicator</div>
+              <div class="risk-pill med">Diabetic: Significant comorbidity</div>
+              <div class="risk-pill med">Kidney Disease: Notable correlation</div>
+              <div class="risk-pill low">Smoking: Moderate but common</div>
+              <div class="risk-pill protective">Physical Activity: Protective factor</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SCENE 2: Ramesh ─────────────────────────────────── -->
+  <section id="scene2" class="story-scene mb-5">
+    <div class="story-scene-header scene-header-blue">
+      <div class="scene-badge"><span>Scene 2</span></div>
+      <div class="scene-persona">
+        <div class="persona-avatar bg-primary-soft"><i class="fa-solid fa-landmark fa-2x text-primary"></i></div>
+        <div>
+          <h3>Ramesh</h3>
+          <p class="text-muted mb-0">Health Policy Analyst · Government Health Department</p>
+        </div>
+      </div>
+      <blockquote class="story-quote">
+        "I need to understand how general health self-assessments correlate with actual 
+         disease prevalence to justify policy investments."
+      </blockquote>
+    </div>
+
+    <div class="story-scene-body">
+      <div class="row g-4">
+        <div class="col-lg-8">
+          {% if chart_genhealth %}
+          <div class="chart-card">
+            <div class="chart-card-header"><i class="fa-solid fa-stethoscope text-info me-1"></i>General Health Self-Assessment vs HD Rate</div>
+            <div id="story_chart3" class="chart-container"></div>
+          </div>
+          {% endif %}
+        </div>
+        <div class="col-lg-4">
+          <div class="story-insight-panel">
+            <h5><i class="fa-solid fa-lightbulb text-primary me-2"></i>Policy Insights</h5>
+            <ul class="story-findings">
+              <li><strong>3× rate difference:</strong> Patients reporting "Poor" health have over 3× the HD rate of those reporting "Excellent".</li>
+              <li><strong>Self-reporting works:</strong> People accurately self-assess their health risk, validating simple survey-based screening.</li>
+              <li><strong>Priority segment:</strong> "Fair" health patients are a large group with high intervention potential.</li>
+            </ul>
+            <div class="story-action-box">
+              <h6><i class="fa-solid fa-gavel text-primary me-1"></i>Policy Recommendation</h6>
+              <p class="small mb-0">Implement annual heart disease screening for all adults self-reporting "Fair" or "Poor" general health, and subsidise fitness programs in workplaces.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mt-2">
+        <div class="col-12">
+          {% if chart_corr %}
+          <div class="chart-card">
+            <div class="chart-card-header"><i class="fa-solid fa-grid text-success me-1"></i>Feature Correlation Matrix – All Clinical Indicators</div>
+            <div id="story_chart5" class="chart-container" style="min-height:480px;"></div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SCENE 3: Anita ──────────────────────────────────── -->
+  <section id="scene3" class="story-scene mb-5">
+    <div class="story-scene-header scene-header-green">
+      <div class="scene-badge"><span>Scene 3</span></div>
+      <div class="scene-persona">
+        <div class="persona-avatar bg-success-soft"><i class="fa-solid fa-user-heart fa-2x text-success"></i></div>
+        <div>
+          <h3>Anita, 45</h3>
+          <p class="text-muted mb-0">Professional · Family History of Heart Disease</p>
+        </div>
+      </div>
+      <blockquote class="story-quote">
+        "Am I at risk? How does my BMI and sleep time compare to other people 
+         with and without heart disease? What can I change?"
+      </blockquote>
+    </div>
+
+    <div class="story-scene-body">
+      <div class="row g-4">
+        <div class="col-lg-7">
+          {% if chart_bmi %}
+          <div class="chart-card">
+            <div class="chart-card-header"><i class="fa-solid fa-weight-scale text-warning me-1"></i>BMI Distribution — HD Patients vs Healthy</div>
+            <div id="story_chart4" class="chart-container"></div>
+          </div>
+          {% endif %}
+        </div>
+        <div class="col-lg-5">
+          <div class="story-insight-panel">
+            <h5><i class="fa-solid fa-heart text-danger me-2"></i>Anita's Risk Dashboard</h5>
+            <div class="personal-risk-table">
+              <div class="risk-row">
+                <span class="risk-factor">BMI</span>
+                <div class="risk-bar-wrap">
+                  <div class="risk-bar" style="width:55%; background:#F39C12;"></div>
+                </div>
+                <span class="risk-level text-warning">Moderate</span>
+              </div>
+              <div class="risk-row">
+                <span class="risk-factor">Family History</span>
+                <div class="risk-bar-wrap">
+                  <div class="risk-bar" style="width:80%; background:#E74C3C;"></div>
+                </div>
+                <span class="risk-level text-danger">High</span>
+              </div>
+              <div class="risk-row">
+                <span class="risk-factor">Physical Activity</span>
+                <div class="risk-bar-wrap">
+                  <div class="risk-bar" style="width:40%; background:#27AE60;"></div>
+                </div>
+                <span class="risk-level text-success">Low Risk</span>
+              </div>
+              <div class="risk-row">
+                <span class="risk-factor">Sleep Quality</span>
+                <div class="risk-bar-wrap">
+                  <div class="risk-bar" style="width:35%; background:#27AE60;"></div>
+                </div>
+                <span class="risk-level text-success">Adequate</span>
+              </div>
+            </div>
+            <div class="story-action-box mt-3">
+              <h6><i class="fa-solid fa-clipboard-list text-success me-1"></i>Actionable Steps</h6>
+              <ul class="small mb-0">
+                <li>Maintain BMI below 25 (target weight loss ~3 kg)</li>
+                <li>30 minutes of moderate exercise, 5 days/week</li>
+                <li>Annual cholesterol and BP check</li>
+                <li>Maintain 7–8 hours of sleep nightly</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Story Summary -->
+  <div class="story-summary-card">
+    <h4><i class="fa-solid fa-flag-checkered me-2 text-success"></i>Summary: What the Data Tells Us</h4>
+    <div class="row g-4 mt-2">
+      <div class="col-md-4">
+        <div class="summary-point">
+          <div class="sp-icon text-danger"><i class="fa-solid fa-1"></i></div>
+          <p><strong>Age + Gender are the strongest demographic predictors.</strong> Males over 55 have significantly higher HD rates. Prevention must be age-stratified.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="summary-point">
+          <div class="sp-icon text-primary"><i class="fa-solid fa-2"></i></div>
+          <p><strong>Lifestyle is modifiable and high-impact.</strong> Stroke history, difficulty walking, and diabetes are strong comorbidities, while physical activity is protective.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="summary-point">
+          <div class="sp-icon text-success"><i class="fa-solid fa-3"></i></div>
+          <p><strong>Early self-assessment is reliable.</strong> Patients who rate their health "Poor" or "Fair" have dramatically higher HD rates — simple surveys can drive early intervention.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const cfg = {responsive: true, displayModeBar: false};
+{% if chart_age_sex %}
+const s1 = {{ chart_age_sex | safe }};
+Plotly.newPlot('story_chart1', s1.data, s1.layout, cfg);
+{% endif %}
+{% if chart_risk %}
+const s2 = {{ chart_risk | safe }};
+Plotly.newPlot('story_chart2', s2.data, s2.layout, cfg);
+{% endif %}
+{% if chart_genhealth %}
+const s3 = {{ chart_genhealth | safe }};
+Plotly.newPlot('story_chart3', s3.data, s3.layout, cfg);
+{% endif %}
+{% if chart_bmi %}
+const s4 = {{ chart_bmi | safe }};
+Plotly.newPlot('story_chart4', s4.data, s4.layout, cfg);
+{% endif %}
+{% if chart_corr %}
+const s5 = {{ chart_corr | safe }};
+Plotly.newPlot('story_chart5', s5.data, s5.layout, cfg);
+{% endif %}
+
+// Smooth scene scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('scene-visible');
+  });
+}, {threshold: 0.1});
+document.querySelectorAll('.story-scene').forEach(s => observer.observe(s));
+</script>
+{% endblock %}

@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}Performance Testing{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <div>
+      <h2 class="page-title"><i class="fa-solid fa-gauge-high text-warning me-2"></i>Performance Testing</h2>
+      <p class="text-muted mb-0">Data volume · Chart render times · Filter utilization · Calculated fields audit</p>
+    </div>
+    <div class="ms-auto">
+      <span class="badge bg-warning-soft text-warning px-3 py-2">Total Query Time: {{ total_elapsed }} ms</span>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="row g-3 mb-4">
+    {% set pdata = [
+      ("Total Records",          stats.total_records, "fa-database",     "primary",   "Records in SQLite DB"),
+      ("HD Rate",                stats.hd_rate|string + "%", "fa-heart-crack", "danger", "Heart Disease Prevalence"),
+      ("Columns / Features",     stats.num_columns,   "fa-table-columns","secondary", "Dataset dimensions"),
+      ("Unique Visualizations",  stats.num_visualizations,"fa-chart-pie","success",  "Interactive charts"),
+      ("Calculated Fields",      stats.num_calc_fields,"fa-calculator",  "info",      "Derived metrics"),
+      ("Dynamic Filters",        stats.num_filters,   "fa-sliders",      "warning",   "Interactive filters"),
+    ] %}
+    {% for label, value, icon, color, sub in pdata %}
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="kpi-card kpi-{{ color }}">
+        <div class="kpi-icon"><i class="fa-solid fa-{{ icon }}"></i></div>
+        <div class="kpi-body">
+          <div class="kpi-label">{{ label }}</div>
+          <div class="kpi-value">{{ value }}</div>
+          <div class="kpi-sub">{{ sub }}</div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Chart render time table -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header"><i class="fa-solid fa-stopwatch text-warning me-2"></i><strong>Chart Render Times</strong></div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0">
+            <thead class="table-dark">
+              <tr><th>Chart Name</th><th class="text-end">Render (ms)</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              {% for name, ms in render_times.items() %}
+              <tr>
+                <td class="small">{{ name }}</td>
+                <td class="text-end small"><strong>{{ ms }}</strong></td>
+                <td>
+                  {% if ms < 100 %}
+                    <span class="badge bg-success-soft text-success">Fast</span>
+                  {% elif ms < 300 %}
+                    <span class="badge bg-warning-soft text-warning">OK</span>
+                  {% else %}
+                    <span class="badge bg-danger-soft text-danger">Slow</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot class="table-light">
+              <tr>
+                <td class="small fw-bold">Total (all charts)</td>
+                <td class="text-end small fw-bold">{{ render_times.values()|sum | round(1) }} ms</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header"><i class="fa-solid fa-weight-scale text-info me-2"></i><strong>BMI & Health Averages by HD Status</strong></div>
+        <div class="card-body">
+          <table class="table table-sm table-hover">
+            <thead class="table-dark">
+              <tr><th>HD Status</th><th>Avg BMI</th><th>Avg Sleep (hrs)</th><th>Avg Phys Bad Days</th><th>Avg Mental Bad Days</th></tr>
+            </thead>
+            <tbody>
+              {% for row in stats.bmi_stats %}
+              <tr>
+                <td>
+                  {% if row.HeartDisease == 'Yes' %}
+                  <span class="badge bg-danger">Yes</span>
+                  {% else %}
+                  <span class="badge bg-success">No</span>
+                  {% endif %}
+                </td>
+                <td>{{ row.avg_bmi }}</td>
+                <td>{{ row.avg_sleep }}</td>
+                <td>{{ row.avg_phys }}</td>
+                <td>{{ row.avg_mental }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculated Fields Registry -->
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header"><i class="fa-solid fa-calculator text-success me-2"></i><strong>Calculated Fields Registry</strong></div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0">
+            <thead class="table-dark">
+              <tr><th>#</th><th>Field Name</th><th>Formula</th><th>Used In</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td><code>hd_rate</code></td><td><code>SUM(HD=Yes)/COUNT(*)*100</code></td><td>All charts</td></tr>
+              <tr><td>2</td><td><code>avg_bmi</code></td><td><code>AVG(BMI)</code> by group</td><td>BMI Analysis, Age Bubble</td></tr>
+              <tr><td>3</td><td><code>comorbidity_group</code></td><td><code>CASE WHEN Diabetic='Yes' AND Smoking='Yes'...</code></td><td>Comorbidity chart</td></tr>
+              <tr><td>4</td><td><code>correlation_r</code></td><td>Pearson r via pandas .corr()</td><td>Correlation heatmap</td></tr>
+              <tr><td>5</td><td><code>risk_factor_differential</code></td><td><code>HDrate(factor=Y) - HDrate(factor=N)</code></td><td>Risk Factors chart</td></tr>
+              <tr><td>6</td><td><code>bmi_z_group</code></td><td>Binary HD/no-HD group labels for violin</td><td>BMI violin chart</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Filters Registry -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header"><i class="fa-solid fa-sliders text-primary me-2"></i><strong>Filter Registry</strong></div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0">
+            <thead class="table-dark">
+              <tr><th>#</th><th>Filter</th><th>Type</th><th>Values</th><th>Charts Affected</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>Gender (Sex)</td><td>Dropdown</td><td>All / Male / Female</td><td>2 filtered charts</td></tr>
+              <tr><td>2</td><td>Age Group</td><td>Dropdown</td><td>All / 18-24 … 80+</td><td>2 filtered charts</td></tr>
+              <tr><td>3</td><td>Diabetic</td><td>Dropdown</td><td>All / Yes / No</td><td>2 filtered charts</td></tr>
+              <tr><td>4</td><td>Smoking</td><td>Dropdown</td><td>All / Yes / No</td><td>2 filtered charts</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header"><i class="fa-solid fa-eye text-secondary me-2"></i><strong>SQL Views in Database</strong></div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0">
+            <thead class="table-dark">
+              <tr><th>View Name</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>v_risk_counts</code></td><td>Aggregate risk factor counts for KPIs</td></tr>
+              <tr><td><code>v_hd_by_age</code></td><td>HD counts grouped by age category</td></tr>
+              <tr><td><code>v_hd_by_sex</code></td><td>HD counts grouped by gender</td></tr>
+              <tr><td><code>v_hd_by_genhealth</code></td><td>HD counts grouped by general health</td></tr>
+              <tr><td><code>v_bmi_avg</code></td><td>Average BMI/sleep/health by HD status</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech Stack -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header"><i class="fa-solid fa-layer-group text-primary me-2"></i><strong>Technical Architecture</strong></div>
+    <div class="card-body">
+      <div class="row g-4 text-center">
+        {% set stack = [
+          ("fa-file-csv",       "warning",  "Dataset",       "Heart_new2.csv<br>4,500 records · 18 features"),
+          ("fa-database",       "primary",  "Database",      "SQLite via SQLAlchemy<br>5 SQL views · 1 main table"),
+          ("fa-python",         "info",     "Analytics",     "pandas · numpy<br>scikit-learn correlation"),
+          ("fa-chart-pie",      "success",  "Visualization", "Plotly 5.18<br>13 chart types"),
+          ("fa-server",         "danger",   "Web API",       "Flask 3.0<br>5 pages · 3 API endpoints"),
+          ("fa-desktop",        "secondary","Frontend",      "Bootstrap 5 · Vanilla JS<br>Responsive design"),
+        ] %}
+        {% for icon, color, layer, detail in stack %}
+        <div class="col-6 col-md-2">
+          <div class="tech-card">
+            <i class="fa-brands fa-{{ icon }} fa-2x text-{{ color }} mb-2" onerror="this.className='fa-solid fa-{{ icon }} fa-2x text-{{ color }} mb-2'"></i>
+            <i class="fa-solid fa-{{ icon }} fa-2x text-{{ color }} mb-2"></i>
+            <h6>{{ layer }}</h6>
+            <p class="small text-muted mb-0">{{ detail | safe }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

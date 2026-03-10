@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+{% block title %}Interactive Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+    <div>
+      <h2 class="page-title"><i class="fa-solid fa-chart-line text-danger me-2"></i>Interactive Dashboard</h2>
+      <p class="text-muted mb-0">Heart Disease Risk Analysis · 13 Visualizations · Live SQL Filters</p>
+    </div>
+    <div class="d-flex gap-2">
+      <span class="badge bg-danger-soft text-danger px-3 py-2">
+        <i class="fa-solid fa-heart-crack me-1"></i>{{ kpis.hd_pct }}% HD Rate
+      </span>
+      <span class="badge bg-secondary-soft text-secondary px-3 py-2">
+        <i class="fa-solid fa-database me-1"></i>{{ "{:,}".format(kpis.total) }} Records
+      </span>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="row g-3 mb-4">
+    {% set kpi_data = [
+      ("Heart Disease Cases", kpis.hd_yes, "fa-heart-crack", "danger",  kpis.hd_pct|string + "% of total"),
+      ("Total Patients",      kpis.total,  "fa-users",       "primary", "In dataset"),
+      ("Smokers",             "",          "fa-smoking",     "warning", kpis.smokers_pct|string + "% of total"),
+      ("Diabetic Patients",   "",          "fa-syringe",     "info",    kpis.diabetic_pct|string + "% of total"),
+      ("Physically Active",   "",          "fa-person-running","success",kpis.active_pct|string + "% of total"),
+    ] %}
+    {% for label, value, icon, color, sub in kpi_data %}
+    <div class="col-6 col-md-4 col-lg-2-4">
+      <div class="kpi-card kpi-{{ color }}">
+        <div class="kpi-icon"><i class="fa-solid fa-{{ icon }}"></i></div>
+        <div class="kpi-body">
+          <div class="kpi-label">{{ label }}</div>
+          <div class="kpi-value">
+            {% if value %}{{ "{:,}".format(value) }}{% else %}&mdash;{% endif %}
+          </div>
+          <div class="kpi-sub">{{ sub }}</div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ── Filter Panel ───────────────────────────────────── -->
+  <div class="card filter-card mb-4">
+    <div class="card-header d-flex align-items-center gap-2">
+      <i class="fa-solid fa-sliders text-primary"></i>
+      <strong>Dynamic Filters</strong>
+      <small class="text-muted ms-2">Charts below update in real time</small>
+      <button class="btn btn-sm btn-outline-secondary ms-auto" id="resetFilters">
+        <i class="fa-solid fa-rotate-left me-1"></i>Reset
+      </button>
+    </div>
+    <div class="card-body py-3">
+      <div class="row g-3 align-items-end">
+        <div class="col-6 col-md-3">
+          <label class="form-label small fw-semibold">Gender</label>
+          <select class="form-select form-select-sm" id="fSex">
+            <option value="All">All Genders</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label small fw-semibold">Age Group</label>
+          <select class="form-select form-select-sm" id="fAge">
+            {% for a in age_categories %}
+            <option value="{{ a }}">{{ a }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label small fw-semibold">Diabetic</label>
+          <select class="form-select form-select-sm" id="fDiabetic">
+            <option value="All">All</option>
+            <option value="Yes">Diabetic</option>
+            <option value="No">Non-Diabetic</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label small fw-semibold">Smoking</label>
+          <select class="form-select form-select-sm" id="fSmoking">
+            <option value="All">All</option>
+            <option value="Yes">Smokers</option>
+            <option value="No">Non-Smokers</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Filtered Charts Row ─────────────────────────────── -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <span><i class="fa-solid fa-filter text-primary me-1"></i>Filtered: General Health</span>
+          <span class="chart-loader" id="loader1"><div class="spinner-border spinner-border-sm text-primary"></div></span>
+        </div>
+        <div id="chart_filtered_genhealth" class="chart-container"></div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <span><i class="fa-solid fa-filter text-primary me-1"></i>Filtered: BMI by Age</span>
+          <span class="chart-loader" id="loader2"><div class="spinner-border spinner-border-sm text-primary"></div></span>
+        </div>
+        <div id="chart_filtered_bmi" class="chart-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 1: Donut + Age ──────────────────────────────── -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-4">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-chart-pie text-danger me-1"></i>HD Prevalence</div>
+        <div id="chart_hd_dist" class="chart-container"></div>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-chart-line text-primary me-1"></i>Heart Disease Rate by Age</div>
+        <div id="chart_hd_age" class="chart-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 2: BMI + Risk Factors ─────────────────────── -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-5">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-weight-scale text-warning me-1"></i>BMI Distribution</div>
+        <div id="chart_bmi_dist" class="chart-container"></div>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-triangle-exclamation text-danger me-1"></i>Risk Factors vs HD Rate</div>
+        <div id="chart_risk_factors" class="chart-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 3: Gender + GenHealth ─────────────────────── -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-5">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-venus-mars text-success me-1"></i>By Gender</div>
+        <div id="chart_hd_sex" class="chart-container"></div>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-stethoscope text-info me-1"></i>General Health vs HD Rate</div>
+        <div id="chart_genhealth" class="chart-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 4: Race treemap + Age-Sex bubble ─────────── -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-sitemap text-primary me-1"></i>Race Treemap</div>
+        <div id="chart_race_hd" class="chart-container"></div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-circle-nodes text-warning me-1"></i>Age + Gender Bubble</div>
+        <div id="chart_age_sex" class="chart-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 5: Comorbidities ──────────────────────────── -->
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="chart-card">
+        <div class="chart-card-header"><i class="fa-solid fa-layer-group text-secondary me-1"></i>Comorbidities: Diabetic + Smoking</div>
+        <div id="chart_comorbid" class="chart-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SQL Explorer -->
+  <div class="card mb-4 sql-explorer">
+    <div class="card-header d-flex align-items-center gap-2">
+      <i class="fa-solid fa-database text-success"></i>
+      <strong>Live SQL Explorer</strong>
+      <small class="text-muted ms-2">Execute SELECT queries against the heart disease database</small>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-12">
+          <textarea class="form-control font-monospace sql-input" id="sqlInput" rows="3"
+            placeholder="SELECT AgeCategory, COUNT(*) as total FROM heart_records GROUP BY AgeCategory ORDER BY total DESC"></textarea>
+        </div>
+        <div class="col-12 d-flex gap-2 flex-wrap">
+          <button class="btn btn-success btn-sm" id="runSql">
+            <i class="fa-solid fa-play me-1"></i>Run Query
+          </button>
+          <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('sqlInput').value='SELECT * FROM v_risk_counts'">Sample 1</button>
+          <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('sqlInput').value='SELECT AgeCategory, ROUND(100.0*SUM(CASE WHEN HeartDisease=\'Yes\' THEN 1 ELSE 0 END)/COUNT(*),1) as HD_Rate, COUNT(*) as total FROM heart_records GROUP BY AgeCategory ORDER BY total DESC'">Sample 2</button>
+          <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('sqlInput').value='SELECT Sex, Smoking, ROUND(AVG(BMI),2) as avg_bmi, COUNT(*) as total FROM heart_records GROUP BY Sex, Smoking'">Sample 3</button>
+        </div>
+        <div class="col-12">
+          <div id="sqlResult" class="sql-result-area"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ── Embed static charts ───────────────────────────────────
+const staticCharts = {
+  chart_hd_dist:     {{ charts.hd_dist | safe }},
+  chart_hd_age:      {{ charts.hd_age | safe }},
+  chart_bmi_dist:    {{ charts.bmi_dist | safe }},
+  chart_risk_factors:{{ charts.risk_factors | safe }},
+  chart_hd_sex:      {{ charts.hd_sex | safe }},
+  chart_genhealth:   {{ charts.genhealth | safe }},
+  chart_race_hd:     {{ charts.race_hd | safe }},
+  chart_age_sex:     {{ charts.age_sex | safe }},
+  chart_comorbid:    {{ charts.comorbid | safe }},
+};
+
+const cfg = {responsive: true, displayModeBar: true,
+             modeBarButtonsToRemove: ['lasso2d','select2d']};
+
+Object.entries(staticCharts).forEach(([id, spec]) => {
+  if (spec) Plotly.newPlot(id, spec.data, spec.layout, cfg);
+});
+
+// ── Dynamic filter logic ───────────────────────────────────
+let filterTimer;
+function getFilters() {
+  return {
+    sex:      document.getElementById('fSex').value,
+    age:      document.getElementById('fAge').value,
+    diabetic: document.getElementById('fDiabetic').value,
+    smoking:  document.getElementById('fSmoking').value,
+  };
+}
+
+function showLoaders() {
+  document.getElementById('loader1').style.display = 'inline-block';
+  document.getElementById('loader2').style.display = 'inline-block';
+}
+function hideLoaders() {
+  document.getElementById('loader1').style.display = 'none';
+  document.getElementById('loader2').style.display = 'none';
+}
+
+function applyFilters() {
+  clearTimeout(filterTimer);
+  filterTimer = setTimeout(async () => {
+    const f = getFilters();
+    const params = new URLSearchParams(f);
+    showLoaders();
+    try {
+      const resp = await fetch('/api/filter?' + params.toString());
+      const data = await resp.json();
+      const ghSpec = JSON.parse(data.genhealth);
+      const bmiSpec = JSON.parse(data.bmi);
+      Plotly.react('chart_filtered_genhealth', ghSpec.data, ghSpec.layout, cfg);
+      Plotly.react('chart_filtered_bmi', bmiSpec.data, bmiSpec.layout, cfg);
+    } catch(e) { console.error(e); }
+    hideLoaders();
+  }, 400);
+}
+
+['fSex','fAge','fDiabetic','fSmoking'].forEach(id =>
+  document.getElementById(id).addEventListener('change', applyFilters)
+);
+
+document.getElementById('resetFilters').addEventListener('click', () => {
+  ['fSex','fAge','fDiabetic','fSmoking'].forEach(id => {
+    document.getElementById(id).value = 'All';
+  });
+  applyFilters();
+});
+
+// Initial filtered chart load
+hideLoaders();
+applyFilters();
+
+// ── SQL Explorer ──────────────────────────────────────────
+document.getElementById('runSql').addEventListener('click', async () => {
+  const sql = document.getElementById('sqlInput').value.trim();
+  if (!sql) return;
+  const el = document.getElementById('sqlResult');
+  el.innerHTML = '<div class="text-muted small">Running...</div>';
+  try {
+    const resp = await fetch('/api/sql', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({sql})
+    });
+    const data = await resp.json();
+    if (data.error) {
+      el.innerHTML = `<div class="alert alert-danger small">${data.error}</div>`;
+      return;
+    }
+    let html = `<div class="small text-muted mb-2">Returned <b>${data.count}</b> rows (showing up to 200)</div>`;
+    html += '<div class="table-responsive"><table class="table table-sm table-hover table-bordered sql-table">';
+    html += '<thead class="table-dark"><tr>' + data.columns.map(c => `<th>${c}</th>`).join('') + '</tr></thead>';
+    html += '<tbody>' + data.rows.map(r => '<tr>' + r.map(v => `<td>${v ?? ''}</td>`).join('') + '</tr>').join('') + '</tbody></table></div>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = `<div class="alert alert-danger small">${e.message}</div>`;
+  }
+});
+</script>
+{% endblock %}
